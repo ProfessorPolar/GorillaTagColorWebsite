@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGB Color Combinations with Slider</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    .colorBox {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      border: 2px solid #000;
+      display: inline-block;
+      line-height: 60px;
+      cursor: pointer;
+    }
+
+    .colorText {
+      font-size: 14px; /* Increased font size for color combinations */
+      font-weight: bold;
+      text-align: center;
+      color: #fff; /* White text color */
+      -webkit-text-stroke: 1px #000; /* Text outline for Webkit browsers */
+      text-stroke: 1px #000; /* Standard text outline */
+      text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.8); /* Increased text shadow for prominence */
+    }
+
+    #colorGrid {
+      margin-top: 20px;
+    }
+
+    #sliders {
+      margin: 20px auto;
+    }
+
+    #colorBoxSlider {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      border: 2px solid #000;
+      position: relative;
+    }
+
+    #sliderColorText {
+      font-size: 18px; /* Increased font size for slider color text */
+      font-weight: bold;
+      text-align: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff; /* White text color */
+      -webkit-text-stroke: 1px #000; /* Text outline for Webkit browsers */
+      text-stroke: 1px #000; /* Standard text outline */
+      text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.8); /* Increased text shadow for prominence */
+    }
+
+    input[type="range"] {
+      width: 200px;
+      margin: 0 5px;
+    }
+
+    #redSlider, #greenSlider, #blueSlider {
+      width: 200px;
+      margin: 0 5px;
+    }
+
+    #searchBar {
+      margin-top: 20px;
+    }
+
+    #colorDropdown {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gorilla Tag RGBs</h1>
+
+  <div id="sliders">
+    <label for="redSlider">Red:</label>
+    <input type="range" id="redSlider" min="0" max="9" value="0" onchange="updateColor()">
+  
+    <label for="greenSlider">Green:</label>
+    <input type="range" id="greenSlider" min="0" max="9" value="0" onchange="updateColor()">
+  
+    <label for="blueSlider">Blue:</label>
+    <input type="range" id="blueSlider" min="0" max="9" value="0" onchange="updateColor()">
+  </div>
+
+  <div id="colorBoxSlider">
+    <div id="sliderColorText"></div>
+  </div>
+
+  <div id="searchBar">
+    <label for="searchInput">Search RGB:</label>
+    <input type="text" id="searchInput" oninput="filterColors()">
+  </div>
+
+  <div id="colorDropdown">
+    <label for="colorSelect">Select Color:</label>
+    <select id="colorSelect" onchange="sortColors()">
+      <option value="all">All Colors</option>
+      <option value="red">Red</option>
+      <option value="yellow">Yellow</option>
+      <option value="green">Green</option>
+      <option value="blue">Blue</option>
+      <option value="purple">Purple</option>
+    </select>
+  </div>
+
+  <div id="colorGrid"></div>
+
+  <script>
+    function createColorGrid() {
+      const colorGrid = document.getElementById('colorGrid');
+      for (let red = 0; red <= 9; red++) {
+        for (let green = 0; green <= 9; green++) {
+          for (let blue = 0; blue <= 9; blue++) {
+            const colorBox = document.createElement('div');
+            colorBox.className = 'colorBox';
+            colorBox.style.backgroundColor = `rgb(${red * 25},${green * 25},${blue * 25})`;
+
+            const colorText = document.createElement('div');
+            colorText.className = 'colorText';
+            colorText.textContent = `(${red},${green},${blue})`;
+
+            // Adjust text color based on brightness
+            colorText.style.color = '#fff'; /* White text color */
+
+            colorBox.appendChild(colorText);
+
+            colorBox.addEventListener('click', function () {
+              updateSliders(red, green, blue);
+              copyToClipboard(colorText.textContent);
+            });
+
+            colorGrid.appendChild(colorBox);
+          }
+        }
+      }
+    }
+
+    function updateColor() {
+      const red = document.getElementById('redSlider').value;
+      const green = document.getElementById('greenSlider').value;
+      const blue = document.getElementById('blueSlider').value;
+
+      const colorBoxSlider = document.getElementById('colorBoxSlider');
+      colorBoxSlider.style.backgroundColor = `rgb(${red * 25},${green * 25},${blue * 25})`;
+
+      // Update color text
+      const sliderColorText = document.getElementById('sliderColorText');
+      sliderColorText.textContent = `(${red},${green},${blue})`;
+    }
+
+    function updateSliders(red, green, blue) {
+      document.getElementById('redSlider').value = red;
+      document.getElementById('greenSlider').value = green;
+      document.getElementById('blueSlider').value = blue;
+
+      updateColor();
+    }
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    function filterColors() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const colorBoxes = document.querySelectorAll('.colorBox');
+
+      colorBoxes.forEach((colorBox) => {
+        const colorText = colorBox.querySelector('.colorText').textContent.toLowerCase();
+        if (colorText.includes(searchInput)) {
+          colorBox.style.display = 'inline-block';
+        } else {
+          colorBox.style.display = 'none';
+        }
+      });
+    }
+
+    function sortColors() {
+      const colorSelect = document.getElementById('colorSelect');
+      const selectedColor = colorSelect.value.toLowerCase();
+      const colorBoxes = document.querySelectorAll('.colorBox');
+
+      colorBoxes.forEach((colorBox) => {
+        const colorText = colorBox.querySelector('.colorText').textContent.toLowerCase();
+        const colorGroup = getColorGroup(colorText);
+
+        if (selectedColor === 'all' || colorGroup === selectedColor) {
+          colorBox.style.display = 'inline-block';
+        } else {
+          colorBox.style.display = 'none';
+        }
+      });
+    }
+
+    function getColorGroup(colorText) {
+      const [red, green, blue] = colorText.replace(/[^\d,]/g, '').split(',');
+      const hue = calculateHue(Number(red), Number(green), Number(blue));
+      
+      if (hue >= 0 && hue < 30) {
+        return 'red';
+      } else if (hue >= 30 && hue < 90) {
+        return 'yellow';
+      } else if (hue >= 90 && hue < 150) {
+        return 'green';
+      } else if (hue >= 150 && hue < 210) {
+        return 'cyan';
+      } else if (hue >= 210 && hue < 270) {
+        return 'blue';
+      } else if (hue >= 270 && hue < 330) {
+        return 'purple';
+      } else if (hue >= 330 || hue < 30) {
+        return 'red'; // Close to red, considering hue values wrap around
+      } else {
+        return 'other';
+      }
+    }
+
+    function calculateHue(red, green, blue) {
+      const max = Math.max(red, green, blue);
+      const min = Math.min(red, green, blue);
+
+      let hue;
+
+      if (max === min) {
+        hue = 0;
+      } else {
+        const diff = max - min;
+        switch (max) {
+          case red:
+            hue = (green - blue) / diff + (green < blue ? 6 : 0);
+            break;
+          case green:
+            hue = (blue - red) / diff + 2;
+            break;
+          case blue:
+            hue = (red - green) / diff + 4;
+            break;
+        }
+        hue *= 60;
+      }
+
+      return hue;
+    }
+
+    // Initialize the color grid
+    createColorGrid();
+  </script>
+
+</body>
+</html>
